@@ -1,0 +1,2 @@
+[ucs]
+ucs1 ucs_hostname=192.168.2.109 ucs_username=ucspe ucs_password=ucspe ucs_state=present

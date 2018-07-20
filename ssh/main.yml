@@ -1,0 +1,46 @@
+---
+- hosts: test
+  user: ansible
+  #  sudo: yes
+  become: yes
+  become_user: root
+  tasks:
+  - name: create key directory
+    action: file path=/etc/ssh/authorized_keys state=directory
+      owner=0 group=0 mode=0755
+ 
+      #  - name: upload user key
+      #action: copy src=/home/ansible/ssh/authorized_keys/{{ item }}
+      #dest=/etc/ssh/authorized_keys/
+      #owner=0 group=0 mode=644
+      #with_items: "{{ sshusers }}"
+ 
+  - name: upload auth file
+    authorized_key:
+     user: "{{ item.name }}"
+     state: present
+     key: "{{ item.key }}"
+     path: /etc/ssh/authorized_keys/{{ item.name }}
+    with_items: "{{ ssh_users }}"
+
+
+     # - name: upload auth file
+     #authorized_key:
+     #user: cjeter
+     #state: present
+     #key: "{{ lookup('file', 'cjeter_ed25519-key-20180212_pub') }}"
+     #path: /etc/ssh/authorized_keys/cjeter
+     #with_items: "{{ sshusers }}"
+     
+  - name: sshd configuration file update
+    template: src=/home/ansible/ssh/sshd_config.j2
+      dest=/etc/ssh/sshd_config
+      backup=yes
+      owner=0 group=0 mode=0644
+      validate='/usr/sbin/sshd -T -f %s'
+    notify:
+    - restart sshd
+ 
+  handlers:
+    - name: restart sshd
+      service: name=sshd state=restarted

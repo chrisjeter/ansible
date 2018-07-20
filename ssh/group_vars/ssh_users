@@ -1,0 +1,3 @@
+ssh_users:
+  - name: cjeter
+    key: "{{ lookup('file', 'cjeter_ed25519-key-20180212_pub') }}"

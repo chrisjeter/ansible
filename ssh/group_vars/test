@@ -1,0 +1,9 @@
+sshusers:
+ - cjeter
+ - ansible
+
+ssh_users:
+  - name: cjeter
+    key: "{{ lookup('file', 'cjeter_ed25519-key-20180212_pub') }}"
+  - name: ansible
+    key: "{{ lookup('file', 'ansible_user_ed25519.pub') }}"
