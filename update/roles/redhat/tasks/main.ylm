@@ -1,0 +1,51 @@
+---
+- hosts: cent
+  become: true
+  tasks:
+   - name: create /root/bin 
+     file:
+      path: /root/bin
+      state: directory
+      owner: root
+      group: root
+      mode: 0700
+   
+   - name: install own version of 'needs-restarting'
+     copy: src=needs-restarting.py dest=/root/bin/needs-restarting.py mode=0700
+     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+   - name: upgrade redhat packages
+     yum:
+      name: '*'
+      state: latest
+     when: ansible_os_family == 'RedHat'
+
+   - name: Reboot required (Red Hat) - Step 1
+     command: /root/bin/needs-restarting.py -r
+     register: reboot_required
+     ignore_errors: True
+     changed_when: False
+     no_log: True
+     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+   - name: Reboot required (Red Hat) - Step 2
+     shell: ( /bin/sleep 5 ; shutdown -r now "Ansible updates triggered" ) &
+     async: 30
+     poll: 0
+     ignore_errors: true
+     # notify:
+     # - waiting for server to come back after reboot
+     when: (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux') and reboot_required.rc == 1
+
+   - meta: end_play
+     when: reboot_required.rc == 0
+   
+   - name: wait for server reboot
+     local_action: wait_for
+     args:
+       host: "{{ ansible_ssh_host }}"
+       port: 22
+       delay: 30
+       timeout: 600
+       state: started
+     become: false

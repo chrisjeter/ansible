@@ -1,74 +1,10 @@
 ---
-
-- hosts: all
-  sudo: yes
+- hosts: redhat
   tasks:
-    - name: Install aptitude
-      apt:
-       name: aptitude
-       state: latest
+  - import_role: 
+     name: redhat
 
-    - name: Update packages list
-      apt: 
-        update_cache: yes
-        cache_valid_time: 3600
-      when: ansible_os_family == 'Debian'
-
-      #    - name: List packages to upgrade (1/2)
-      #shell: 'apt list --upgradable' 
-      #register: updates
-      #changed_when: False
-      #when: ansible_os_family == 'Debian'
-
-      #- name: List packages to upgrade (2/2)
-      #debug: msg="{{ updates.stdout_lines | count }} packages to upgrade ({{ updates.stdout_lines | join(', ') }})"
-      #when: (ansible_os_family == 'Debian' and updates.stdout_lines)
-
-    - name: Upgrade packages
-      apt: 
-       upgrade: full
-      when: ansible_os_family == 'Debian'
-
-    - name: Check if Reboot if needed
-      stat: 
-       path: /var/run/reboot-required 
-      register: reboot_required
-   
-    - name: Reboot if needed
-      shell: 'sleep 1 && /sbin/shutdown -r now'
-      async: 1
-      poll: 0
-      when: reboot_required.stat.exists == True
-
-    - name: wait for server reboot
-      local_action: wait_for
-      args:
-       host: "{{ ansible_ssh_host }}" 
-       port: 22
-       delay: 30
-       timeout: 600
-       state: started
-      become: false
-      when: reboot_required.stat.exists == True
-       #    - name: Wait for reboot
-       #local_action: wait_for
-       #args:
-       
-      #    - name: Check what the new version is
-      #shell:  lsb_release -r | awk '{print $2}'
-      #changed_when: False
-      #register: new_release
-
-      #    - name: Notify distribution version upgrade
-      #debug: msg="Debian has been upgraded from {{ ansible_lsb.release }} to {{ new_release.stdout }}"
-      #when: ansible_lsb.release != new_release.stdout
-
-      #    - name: List services to restart (1/2)
-      #shell: checkrestart | grep ^service | awk '{print $2}'
-      #register: services
-      #changed_when: False
-      #when: ansible_os_family == 'Debian'
-
-      #- name: List services to restart (2/2)
-      #debug: msg="{{ services.stdout_lines | count }} services to restart ({{ services.stdout_lines | join (', ') }})"
-      #when: (ansible_os_family == 'Debian' and services.stdout_lines)
+- hosts: debian
+  tasks:
+  - import_role: 
+     name: debian

@@ -1,0 +1,59 @@
+---
+
+- hosts: debian
+  become: true
+  tasks:
+    - name: Update packages list
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == 'Debian'
+
+    - name: List packages that have updates
+      command: apt-get --simulate dist-upgrade
+      #shell: apt-get --simulate dist-upgrade
+      args:
+       warn: false
+      register: apt_simulate
+      changed_when: 0
+
+    - name: parse apt-get output to get list of changed packages
+      set_fact:
+        updates: '{{ apt_simulate.stdout_lines | select("match", "^Inst ") | list | splitpart(1, " ") | list | sort }}'
+      changed_when: 0
+
+    # tell user about packages being updated
+    - name: show pending updates
+      debug:
+        var: updates
+      when: updates.0 is defined
+
+    - name: Upgrade debian packages
+      apt:
+       upgrade: dist
+      when: ansible_os_family == 'Debian'
+
+    - name: Check if Debian Reboot if needed
+      stat:
+       path: /var/run/reboot-required
+      register: reboot_required
+
+    - meta: end_play
+      when: not reboot_required.stat.exists
+
+    - name: Reboot if needed
+      shell: 'sleep 1 && /sbin/shutdown -r now'
+      async: 1
+      poll: 0
+      #when: reboot_required.stat.exists == True
+
+    - name: wait for server reboot
+      local_action: wait_for
+      args:
+       host: "{{ ansible_ssh_host }}"
+       port: 22
+       delay: 30
+       timeout: 600
+       state: started
+      become: false
+
