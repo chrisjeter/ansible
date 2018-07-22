@@ -1,10 +1,12 @@
 ---
 - hosts: redhat
+  become: true
   tasks:
   - import_role: 
      name: redhat
 
 - hosts: debian
+  become: true
   tasks:
   - import_role: 
      name: debian
