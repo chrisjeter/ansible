@@ -12,6 +12,17 @@
   when: ansible_distribution == 'Fedora' or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   #when: ansible_os_family = 'RedHat'
 
+- name: List packages that have updates
+  command: yum list updates
+  args:
+   warn: False
+  register: yum_update_packages
+  changed_when: 0
+
+- name: show pending redhat updates
+  debug:
+    msg: "{{ yum_update_packages.stdout_lines }}" 
+
 - name: upgrade redhat packages
   yum:
    name: '*'

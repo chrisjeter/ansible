@@ -1,11 +1,16 @@
 ---
-- hosts: redhat
+- hosts: all
+  tasks:
+  - name: Group machines by OS distrobution
+    action: group_by key={{ ansible_os_family }}
+
+- hosts: RedHat
   become: true
   tasks:
   - import_role: 
      name: redhat
 
-- hosts: debian
+- hosts: Debian
   become: true
   tasks:
   - import_role: 
