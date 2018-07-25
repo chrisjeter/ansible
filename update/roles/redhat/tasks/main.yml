@@ -15,13 +15,19 @@
 - name: List packages that have updates
   command: yum list updates
   args:
-   warn: False
+    warn: False
   register: yum_update_packages
   changed_when: 0
 
-- name: show pending redhat updates
+- name: parse yum output to get list of changed packages 
+  set_fact:
+    updates: "{{ yum_update_packages.stdout_lines| select('match','\\w+-\\w+.\\w+') | list | splitpart(0, ' ') | list | sort }}"
+  changed_when: 0
+
+- name: show pending updates
   debug:
-    msg: "{{ yum_update_packages.stdout_lines | select('match','^\\S+') | list  }}"
+    var: updates
+  when: updates.0 is defined
 
 - name: upgrade redhat packages
   yum:
@@ -32,11 +38,8 @@
 - name: Reboot required (Red Hat) - Step 1
   command: /root/bin/needs-restarting.py -r
   register: reboot_required
-  #register: "{{ hostvars[inventory_hostname]+reboot_required }}"
   ignore_errors: True
   changed_when: False
-  no_log: True
-  #when: ansible_distribution == 'Fedora' or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   when: ansible_os_family == 'RedHat'
 
 - name: Reboot required (Red Hat) - Step 2
@@ -48,11 +51,9 @@
   # - waiting for server to come back after reboot
   #when: (ansible_distribution == 'Fedora' or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux') and reboot_required.rc == 1
   when: reboot_required.rc == 1
-  #when: "{{ hostvars[inventory_hostname]+reboot_required.rc }}" == 1
 
 - meta: end_play
   when: reboot_required.rc == 0
-  #when: "{{ hostvars[inventory_hostname]+reboot_required.rc }}" == 0
    
 - name: wait for server reboot
   local_action: wait_for

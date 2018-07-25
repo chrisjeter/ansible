@@ -17,7 +17,7 @@
 
 - name: parse apt-get output to get list of changed packages
   set_fact:
-    updates: '{{ apt_simulate.stdout_lines | select("match", "^Inst ") | list | splitpart(1, " ") | list | sort }}'
+    updates: "{{ apt_simulate.stdout_lines | select('match', '^Inst ') | list | splitpart(1, ' ') | list | sort }}"
   changed_when: 0
 
     # tell user about packages being updated
