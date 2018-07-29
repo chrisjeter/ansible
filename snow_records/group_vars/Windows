@@ -1,0 +1,4 @@
+ansible_user: "{{ vault_winrm_user }}"
+ansible_password: "{{ vault_winrm_pass }}"
+ansible_connection: winrm
+ansible_winrm_server_cert_validation: ignore

@@ -1,0 +1,22 @@
+---
+- hosts: localhost 
+  vars_files:
+    - snow_vars.yml
+  remote_user: c317j863
+
+  tasks:
+  - name: test record
+    snow_record:
+      username: "{{ snow_user }}"
+      password: "{{ snow_pass }}"
+      instance: "{{ snow_instance }}"
+      state: "{{ snow_state }}"
+      table: "{{ snow_table }}"
+      lookup_field: "{{ snow_field }}"
+      #number: "{{ ansible_hostname }}"
+      number: utiltst04
+    register: snrecord
+
+  - name: show record
+    debug:
+      var: snrecord

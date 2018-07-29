@@ -1,0 +1,33 @@
+---
+- hosts: all
+  tasks:
+  - name: Group machines by OS distrobution
+    action: group_by key={{ ansible_os_family }}
+
+- hosts: RedHat,Debian
+  become: true
+  tasks:
+      #debug:
+              #msg: "{% for mount in ansible_mounts %}{{ mount.mount }} :: {{ (mount.size_total / 1073741824.0) | round(0)| int }} :: {{ (mount.size_available / 1073741824.0) | round(0) }} || {% endfor %}"
+       #msg: "{% for mount in ansible_mounts %}{{ mount.mount }} :: {{ mount.size_total | filesizeformat | round()}} :: {{ (mount.size_available / 1073741824.0) | round(0) }} || {% endfor %}"
+       #msg: "{% for mount in ansible_mounts %}{{ mount.mount }} :: {{ mount.size_total | sizify | float | round(0) | int }} :: {{ (mount.size_available / 1073741824.0) | round(0) }} || {% endfor %}"
+    - debug:
+            #msg: "{{ item.value }}"
+            #var: "{{ hostvars[inventory_hostname]['ansible_devices'].keys() }}"
+        msg: "{{ item.value.size }}"
+      loop: "{{ ansible_devices | dict2items }}"
+      loop_control:
+        label: "{{ item.value.size }}"
+
+        #with_items: "{{ ansible_devices.keys() | select('match','sd[a-z]') | list}}"
+- hosts: Windows
+  tasks:
+   - name: Windows
+     win_disk_facts:
+     register: disk_facts
+     #- debug:
+           #msg: "{% for mount in ansible_mounts %}{{ mount.mount }} :: {{ (mount.size_total / 1073741824.0) | round(0)| int }} :: {{ (mount.size_available / 1073741824.0) | round(0) }} || {% endfor %}"
+           #msg: "{% for disk in ansible_disks %}{{ disk.size | sizify | float | round(0) | sum | int }} {% endfor %}"
+           #msg: "{% for disk in ansible_disks %}{{ disk.size | sum | int }} {% endfor %}"
+           #msg: "{{ansible_disks | sum(attribute='size') | sizify | int }}"
+           #     msg: "{{ ansible_facts }}"

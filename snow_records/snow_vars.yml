@@ -1,0 +1,7 @@
+---
+snow_user: "{{ vault_snow_user }}"
+snow_pass: "{{ vault_snow_pass }}" 
+snow_instance: 'kuitsandbox'
+snow_state: 'present'
+snow_table: 'cmdb_ci_server'
+snow_field: 'name'
