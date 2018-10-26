@@ -1,7 +1,7 @@
 ---
 - hosts: all
   tasks:
-  - name: Group machines by OS distributions
+  - name: Group machines by OS distribution
     action: group_by key={{ ansible_os_family }}
 
 - hosts: RedHat
